@@ -99,17 +99,20 @@
     {"s": "SMCI", "p": 44.1, "c": 9.8, "h": 1}
   ],
   "curve": 0.35,
+  "mood": {"v": 61, "r": "FUT +1.0%  10Y +4bp  VIX 16 +2%"},
+  "fg": 31,
   "events": [{"t": "CPI", "at": 1790050000}]
 }
 ```
 - `s` ชื่อย่อแสดงผล, `p` ราคา, `c` % change, `sp` sparkline (optional, ≤ 30 จุด)
 - `b` หุ้นหน้า bubble: core 25 ตัวเรียงตาม market cap (ครบทุกตัวเสมอ, ไม่มีข้อมูล = `p`/`c` เป็น null) ตามด้วยหุ้นร้อนแรง (`h:1`, Alpaca most-actives เรียงตาม |%chg|) ≤ 15 ตัว
+- `mood` คะแนน risk-on/off ที่ fetcher คำนวณ (`market_mood()`: futures 30%, VIX 20%, breadth 20%, 10Y 10%, DXY 10%, ทอง 5%, น้ำมัน 5%) + `r` เหตุผล 4 ตัวที่มีผลมากสุด; `fg` CNN Fear & Greed (endpoint ไม่เป็นทางการ, null ถ้าดึงไม่ได้)
 - คีย์สั้นโดยเจตนาเพื่อประหยัด RAM ฝั่ง ESP32
 
 ## หน้าจอ (แตะ/ปัดเพื่อเปลี่ยน)
 0. **Bubbles** (หน้าแรก, ไม่มีแถบบน) — 40 วงเต็มจอ: core ตาม market cap + หุ้นร้อนแรง (ชื่อสีอำพัน); กลางวงมืด ขอบเรืองเขียว/แดง สว่างตาม |%chg|
 1. **Overview** — 8 แถว: SPX/NDX/DJI (หรือ futures), 10Y, VIX, DXY, Gold, WTI + ป้ายสถานะตลาดมุมขวาบน
-2. **VIX Gauge** — เกจเข็ม (<15 เขียว, 15–20 เหลือง, 20–30 ส้ม, >30 แดง) + yield curve
+2. **Market Mood** — เกจคะแนนอารมณ์ตลาด 0–100 (Fear ↔ Greed) + เหตุผล; คอลัมน์ขวา VIX (สีตามโซน <15/20/30), yield curve, 10Y, 2Y, FED, CNN F&G
 4. **Chart + Calendar** — sparkline S&P 5 วัน + เหตุการณ์สำคัญของสัปดาห์ (CPI, NFP, FOMC)
 
 ## สไตล์ UI
