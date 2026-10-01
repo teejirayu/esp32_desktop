@@ -251,9 +251,18 @@ void task(void*) {
   xSemaphoreGive(s_mtx);
   if (demo) Serial.println("[net] DATA_URL not set -> DEMO mode");
 
+  // หลายเครือข่าย: ต่อไม่ได้ภายใน WIFI_RETRY_MS -> สลับไปตัวถัดไป
+  struct Cred {
+    const char *ssid, *pass;
+  };
+  static const Cred creds[] = WIFI_NETWORKS;
+  constexpr int ncred = sizeof(creds) / sizeof(creds[0]);
+  int credIdx = 0;
+
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  WiFi.begin(creds[0].ssid, creds[0].pass);
+  Serial.printf("[net] WiFi connecting to %s\n", creds[0].ssid);
 
   bool ntpStarted = false, wasUp = false;
   uint32_t lastFetch = 0, lastWifiTry = millis();
@@ -285,7 +294,9 @@ void task(void*) {
           WiFi.scanDelete();
         }
         WiFi.disconnect();
-        WiFi.begin(WIFI_SSID, WIFI_PASS);
+        credIdx = (credIdx + 1) % ncred;
+        WiFi.begin(creds[credIdx].ssid, creds[credIdx].pass);
+        Serial.printf("[net] WiFi connecting to %s\n", creds[credIdx].ssid);
       }
       // demo ยังทำงานได้แม้ไม่มี WiFi
       if (demo && (first || millis() - lastFetch >= FETCH_INTERVAL_MS)) {

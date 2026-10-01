@@ -2,8 +2,8 @@
 #pragma once
 
 // ---- WiFi ----
-#define WIFI_SSID "your-ssid"
-#define WIFI_PASS "your-password"
+// ลองตามลำดับ ต่อไม่ได้ 20 วินาที -> ตัวถัดไป (ESP32 รองรับแค่ 2.4GHz)
+#define WIFI_NETWORKS {{"your-ssid", "your-password"}, {"second-ssid", "second-password"}}
 
 // ---- แหล่งข้อมูล: market.json บน branch `data` (สร้างโดย GitHub Actions) ----
 // ยังมีคำว่า YOUR_ อยู่ = โหมด DEMO (สุ่มข้อมูลเพื่อทดสอบหน้าจอ)
