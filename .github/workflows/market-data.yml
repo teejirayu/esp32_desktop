@@ -1,0 +1,54 @@
+# ดึงข้อมูลตลาดทุก ~1 นาที -> market.json บน branch `data` -> ESP32 อ่านผ่าน GitHub API
+#
+# cron ของ GitHub ถี่สุดทุก 5 นาที (และมักช้ากว่ากำหนด) จึงให้แต่ละรอบวนดึงทุก 60 วินาที
+# ~4.5 นาทีเฉพาะตอนตลาด PRE/OPEN/POST; ตอนปิดดึงครั้งเดียวแล้วจบ
+# repo ต้องเป็น public (Actions ฟรีไม่จำกัด) — คีย์อยู่ใน Settings > Secrets > Actions:
+#   ALPACA_KEY_ID, ALPACA_SECRET, FRED_API_KEY
+name: market-data
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: market-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: fetcher
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Prepare data branch
+        run: |
+          mkdir -p out && cd out
+          git init -q -b data
+          git config user.name "market-bot"
+          git config user.email "market-bot@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          # ค่าล่าสุด (ใช้เติมตัวที่ดึงไม่ได้)
+          if git fetch -q --depth 1 origin data; then git checkout -q FETCH_HEAD -- market.json || true; fi
+
+      - name: Fetch loop
+        env:
+          ALPACA_KEY_ID: ${{ secrets.ALPACA_KEY_ID }}
+          ALPACA_SECRET: ${{ secrets.ALPACA_SECRET }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          # แต่ละรอบ: commit ไฟล์เดียวแล้ว force-push (branch data มีประวัติสั้นๆ ไม่บวม)
+          PUBLISH_CMD: >-
+            cd out && git add market.json &&
+            git commit -q -m "data $(date -u +%H:%M:%S)" &&
+            git push -q -f origin HEAD:data
+        run: python fetcher/fetch.py --out out/market.json --loop 270 --every 60
