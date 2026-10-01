@@ -30,7 +30,7 @@
 #define LV_FONT_MONTSERRAT_20 1
 #define LV_FONT_MONTSERRAT_28 1
 #define LV_FONT_MONTSERRAT_48 1
-#define LV_FONT_UNSCII_16 1          // monospace สำหรับราคา (สไตล์ terminal)
+// ราคาใช้ JetBrains Mono (src/fonts/mono_*.c) — unscii_16 กว้าง 16px/ตัว ล้นช่อง
 #define LV_FONT_DEFAULT &lv_font_montserrat_14
 
 // ไม่ใช้ theme/widget ที่ไม่จำเป็น

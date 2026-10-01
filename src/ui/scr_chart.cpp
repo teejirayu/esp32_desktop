@@ -131,11 +131,11 @@ lv_obj_t* create() {
   for (int i = 0; i < EV_ROWS; ++i) {
     int y = EV_Y + i * EV_ROW_H;
     EvRow& r = evRows[i];
-    r.when = make_label(scr, FONT_MONO, COL_WHITE, "");
+    r.when = make_label(scr, FONT_MONO_S, COL_WHITE, "");
     lv_obj_set_pos(r.when, 6, y);
-    r.name = make_label(scr, FONT_MONO, COL_AMBER, "");
+    r.name = make_label(scr, FONT_MONO_S, COL_AMBER, "");
     lv_obj_set_pos(r.name, 116, y);
-    r.count = make_label(scr, FONT_MONO, COL_GRAY, "");
+    r.count = make_label(scr, FONT_MONO_S, COL_GRAY, "");
     lv_obj_set_width(r.count, 90);
     lv_obj_set_style_text_align(r.count, LV_TEXT_ALIGN_RIGHT, 0);
     lv_obj_set_pos(r.count, W - 96, y);

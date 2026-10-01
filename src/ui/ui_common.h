@@ -4,6 +4,12 @@
 
 #include "../market_data.h"
 
+// JetBrains Mono Bold (src/fonts, สร้างด้วย lv_font_conv) — ไฟล์ .c จึงต้อง extern "C"
+extern "C" {
+LV_FONT_DECLARE(mono_14)
+LV_FONT_DECLARE(mono_16)
+}
+
 namespace ui {
 
 constexpr int W = 320, H = 240;
@@ -26,7 +32,8 @@ constexpr int PAGE_COUNT = 4;
 #define COL_YELLOW lv_color_hex(0xFFD60A)
 #define COL_ORANGE lv_color_hex(0xFF8C00)
 
-#define FONT_MONO (&lv_font_unscii_16)
+#define FONT_MONO (&mono_16)
+#define FONT_MONO_S (&mono_14)
 #define FONT_XS (&lv_font_montserrat_10)
 #define FONT_S (&lv_font_montserrat_12)
 #define FONT_M (&lv_font_montserrat_14)
