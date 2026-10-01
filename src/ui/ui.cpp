@@ -59,7 +59,7 @@ void attach(lv_obj_t* scr) {
 void init() {
   s_pages[0] = scr_bubbles::create();
   s_pages[1] = scr_overview::create();
-  s_pages[2] = scr_vix::create();
+  s_pages[2] = scr_mood::create();
   s_pages[3] = scr_chart::create();
   s_clock = scr_clock::create();
   for (lv_obj_t* p : s_pages) attach(p);
@@ -70,7 +70,7 @@ void init() {
 void update(const MarketData& md) {
   s_md = &md;
   scr_overview::update(md);
-  scr_vix::update(md);
+  scr_mood::update(md);
   scr_bubbles::update(md);
   scr_chart::update(md);
   scr_clock::update(md);

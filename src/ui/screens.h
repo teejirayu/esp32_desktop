@@ -8,7 +8,7 @@ namespace scr_overview {
 lv_obj_t* create();
 void update(const MarketData& md);
 }
-namespace scr_vix {
+namespace scr_mood {  // อารมณ์ตลาด (Fear/Greed) + VIX + อัตราดอกเบี้ย
 lv_obj_t* create();
 void update(const MarketData& md);
 }

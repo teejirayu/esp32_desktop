@@ -236,6 +236,62 @@ def fred(series):
     return (obs[0], obs[1] if len(obs) > 1 else obs[0]) if obs else None
 
 
+# ---------------- อารมณ์ตลาด ----------------
+
+def cnn_fear_greed():
+    """CNN Fear & Greed 0-100 (endpoint ไม่เป็นทางการ) — ดึงไม่ได้คืน None"""
+    try:
+        j = get_json("https://production.dataviz.cnn.io/index/fearandgreed/graphdata",
+                     {"Referer": "https://edition.cnn.com/", "Origin": "https://edition.cnn.com"})
+        return round(j["fear_and_greed"]["score"])
+    except Exception as e:  # noqa: BLE001
+        log("cnn", e)
+        return None
+
+
+def clamp1(x):
+    return max(-1.0, min(1.0, x))
+
+
+def market_mood(q, b):
+    """คะแนน risk-on/off 0-100 จากข้อมูลที่มี + เหตุผลสั้นๆ (ตัวที่มีผลมากสุด 4 ตัว)
+
+    แต่ละตัวแปลงเป็น -1..+1 (บวก = เอื้อหุ้นขึ้น) แล้วถ่วงน้ำหนัก
+    ไม่ใช่การทำนาย — วัดว่าตอนนี้ตลาดเอียงไปทางกล้าเสี่ยงหรือกลัว
+    """
+    m = {x["s"]: x for x in q}
+    parts = []  # (น้ำหนัก, คะแนน, ข้อความ)
+
+    fut = [m[s]["c"] for s in ("ES", "NQ") if s in m]
+    if fut:
+        f = sum(fut) / len(fut)
+        parts.append((0.30, clamp1(f / 1.0), "FUT %+.1f%%" % f))
+    if "VIX" in m:
+        v, vc = m["VIX"]["p"], m["VIX"]["c"]
+        parts.append((0.20, 0.5 * clamp1((20 - v) / 8) + 0.5 * clamp1(-vc / 10), "VIX %.0f %+.0f%%" % (v, vc)))
+    valid = [x["c"] for x in b if is_num(x.get("c"))]
+    if valid:
+        up, dn = sum(c > 0 for c in valid), sum(c < 0 for c in valid)
+        parts.append((0.20, (up - dn) / len(valid), "UP %d/%d" % (up, len(valid))))
+    if "10Y" in m and m["10Y"]["c"]:
+        p, c = m["10Y"]["p"], m["10Y"]["c"]
+        bp = (p - p / (1 + c / 100)) * 100
+        parts.append((0.10, clamp1(-bp / 8), "10Y %+.0fbp" % bp))
+    if "DXY" in m:
+        parts.append((0.10, clamp1(-m["DXY"]["c"] / 0.6), "DXY %+.1f%%" % m["DXY"]["c"]))
+    if "GOLD" in m:
+        parts.append((0.05, clamp1(-m["GOLD"]["c"] / 1.5), "GOLD %+.1f%%" % m["GOLD"]["c"]))
+    if "WTI" in m:  # เฉพาะน้ำมันพุ่งแรงที่เป็นลบ
+        parts.append((0.05, clamp1(-max(0.0, m["WTI"]["c"] - 1) / 3), "OIL %+.1f%%" % m["WTI"]["c"]))
+    if not parts:
+        return None
+
+    wsum = sum(w for w, _, _ in parts)
+    score = round(50 + 50 * sum(w * s for w, s, _ in parts) / wsum)
+    top = sorted(parts, key=lambda x: -abs(x[0] * x[1]))[:4]
+    return {"v": score, "r": "  ".join(t for _, _, t in top)}
+
+
 # ---------------- ประกอบ JSON ----------------
 
 class Builder:
@@ -243,6 +299,7 @@ class Builder:
         self.last_q = {x["s"]: x for x in last.get("q", [])}
         self.last_b = {x["s"]: x for x in last.get("b", [])}
         self.fred_cache = None
+        self.fg_cache = None
         self.spark_cache, self.spark_at = {}, 0
         self.hot_cache, self.hot_at = [], 0
 
@@ -290,12 +347,18 @@ class Builder:
             p, prev = self.fred_cache["DFF"]
             q.append({"s": "FED", "p": rnd(p), "c": pct(p, prev)})
 
+        if self.fg_cache is None:  # รายวันเป็นหลัก — ดึงครั้งเดียวต่อรอบ workflow
+            self.fg_cache = cnn_fear_greed() or -1
+
+        b = self.bubbles()
         return {
             "ts": int(now.timestamp()),
             "market": market,
             "q": q,
-            "b": self.bubbles(),
+            "b": b,
             "curve": curve,
+            "mood": market_mood(q, b),
+            "fg": self.fg_cache if self.fg_cache >= 0 else None,
             "events": upcoming_events(now),
         }
 

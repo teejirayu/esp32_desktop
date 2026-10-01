@@ -41,6 +41,9 @@ struct MarketData {
   uint8_t nq = 0, nb = 0, nspark = 0, nev = 0;
   bool hasCurve = false;
   float curve = 0;  // 10Y - 2Y (percentage points)
+  int16_t mood = -1;    // คะแนนอารมณ์ตลาด 0-100 จาก fetcher (-1 = ไม่มี)
+  int16_t fg = -1;      // CNN Fear & Greed 0-100 (-1 = ไม่มี)
+  char moodWhy[64] = "";  // เหตุผลสั้นๆ เช่น "FUT +0.6%  VIX 16 -3%"
   Quote q[MD_MAX_QUOTES];
   BubbleQuote b[MD_MAX_BUBBLES];
   Spark spark[MD_MAX_SPARKS];

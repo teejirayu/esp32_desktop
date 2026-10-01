@@ -74,6 +74,13 @@ bool parse(const char* body, MarketData& out) {
     bq.hot = o["h"] | 0;
   }
 
+  JsonObject mood = doc["mood"];
+  if (mood) {
+    out.mood = mood["v"] | -1;
+    strlcpy(out.moodWhy, mood["r"] | "", sizeof(out.moodWhy));
+  }
+  out.fg = doc["fg"] | -1;
+
   if (!doc["curve"].isNull()) {
     out.curve = doc["curve"];
     out.hasCurve = true;
@@ -185,6 +192,13 @@ void makeDemo(MarketData& out) {
   }
   out.hasCurve = true;
   out.curve = out.find("10Y")->p - out.find("2Y")->p;
+  static float mood = 55;
+  mood += frand(6.f);
+  mood = mood < 5 ? 5 : (mood > 95 ? 95 : mood);
+  out.mood = (int16_t)mood;
+  out.fg = 42;
+  snprintf(out.moodWhy, sizeof(out.moodWhy), "FUT %+.1f%%  VIX 16 %+.0f%%  UP 26/40", (double)chg[4],
+           (double)chg[9]);
   const struct { const char* t; int32_t dt; } evs[] = {
       {"NFP", -3 * 3600}, {"CPI", 26 * 3600 + 1200}, {"FOMC", 3 * 86400 + 7200}, {"PCE", 5 * 86400}};
   for (auto& e : evs) {
