@@ -52,6 +52,9 @@ ETF_EXCLUDE = {
     "SOXL", "SOXS", "TSLL", "TSLQ", "TSLZ", "NVDL", "NVDS", "NVDQ", "UVXY", "VXX", "SVXY", "TLT",
     "HYG", "LQD", "XLF", "XLE", "XLK", "GLD", "SLV", "USO", "KWEB", "FXI", "EEM", "EWZ", "ARKK",
     "SMH", "IBIT", "ETHA", "BITO", "MSTU", "MSTZ", "CONL", "LABU", "LABD", "TZA", "TNA", "YINN",
+    "SCHD", "JEPI", "JEPQ", "BND", "AGG", "VEA", "VWO", "XLV", "XLI", "XLY", "XLP", "XLU", "GDX",
+    "MUU", "AMDL", "AAPU", "GGLL", "METU", "AMZU", "PLTU", "SOXX", "UCO", "BOIL", "KOLD", "NUGT",
+    "GOOG", "BRK.A",  # share class ซ้ำกับตัวใน CORE
 }
 
 # วันหยุด NYSE (ปิดทั้งวัน) และวันปิดเร็ว 13:00 ET
